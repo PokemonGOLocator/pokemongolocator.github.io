@@ -1,0 +1,62 @@
+<html>
+<head>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCgDodYEdP6heYjBxsPNY0OudmpuutaEgc&callback=initMap" async defer>
+ </script>
+ <style>
+  #map-container { height: 100%; width: 100%;}
+ </style>
+</head>
+<body>
+  <div id='map-container'>
+  </div>
+  <script>
+    function promptAndPlaceMarker(latLng) {
+      var pokemonSeen = prompt("What pokemon did you see?", "");
+      var pokemonHTML = '<div>' + pokemonSeen + ' was seen here.</div>';
+      if (pokemonSeen.length == 0) { return };
+      var marker = new google.maps.Marker({
+          position: latLng,
+          map: map,
+          animation: google.maps.Animation.DROP,
+          title: pokemonSeen
+      });
+      var infowindow = new google.maps.InfoWindow({
+        content: pokemonHTML
+      });
+      marker.addListener('click', function(){
+        infowindow.open(map, marker);
+      })
+    }
+    var map;
+    function initMap() {
+      var defaultLat = 37.5407;
+      var defaultLon = -77.4360;
+      var userLat, userLon;
+      if("geolocation" in navigator) {
+        var userPosition = navigator.geolocation.getCurrentPosition(function(userPosition){
+          userLat = userPosition.coords.latitude;
+          userLon = userPosition.coords.longitude;
+        });
+      }
+      map = new google.maps.Map(document.getElementById('map-container'), {
+        center: {
+          lat: (userLat != null) ? userLat : defaultLat ,
+          lng: (userLon!= null) ? userLon : defaultLon
+        },
+        zoom: 14
+      });
+
+      var updateTimeout;
+      google.maps.event.addListener(map, 'click', function(event){
+        updateTimeout = setTimeout(function() {
+          promptAndPlaceMarker(event.latLng)
+        }, 200);
+      });
+
+      google.maps.event.addListener(map, 'dblclick', function(event) {
+        clearTimeout(updateTimeout);
+      });
+    }
+  </script>
+</body>
+</html>
