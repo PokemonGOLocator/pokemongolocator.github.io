@@ -5,7 +5,10 @@
  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css">
  <style>
   #map-container { height: 100%; width: 100%;}
-  #dialog { display: none; height: 100px; width: 100px;}
+  #dialog { display: none; }
+  #dialog #dialog-form { margin-top: 25px; }
+  #dialog #dialog-form #pokemonSeen { float: left; margin-left: 8%; border: 1px solid black; height: 26px ;}
+  #dialog #dialog-form #dialog-submit { border: 1px solid black; float: left; margin-left: 10px; height: 26px; }
  </style>
 </head>
 <body>
@@ -29,7 +32,7 @@
           lat: (userLat != 0) ? userLat : defaultLat ,
           lng: (userLon != 0) ? userLon : defaultLon
         },
-        zoom: 14
+        zoom: 17
       });
 
       var updateTimeout;
@@ -53,10 +56,12 @@
   <div id='dialog'>
     <input type='hidden' id='location-lat' />
     <input type='hidden' id='location-lng' />
-    <div class="ui-widget">
-      <input type='text' name='pokemonSeen' id='pokemonSeen'/>
+    <div id='dialog-form'>
+      <div class="ui-widget">
+        <input type='text' name='pokemonSeen' id='pokemonSeen'/>
+      </div>
+      <button id="dialog-submit">Ok</button>
     </div>
-    <button id="dialog-submit">Ok</button>
   </div>
   <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
   <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js" integrity="sha256-eGE6blurk5sHj+rmkfsGYeKyZx3M4bG+ZlFyA7Kns7E=" crossorigin="anonymous"></script>
@@ -233,7 +238,14 @@
     });
 
     window.dialog = $('#dialog');
-    window.dialog.dialog({ autoOpen: false });
+    window.dialog.dialog({
+      title: 'Which Pokemon Did You See?',
+      modal: true,
+      draggable: false,
+      resizable: false,
+      autoOpen: false,
+      create: function(event) { $(event.target).parent().css({ 'position': 'fixed', 'top': '50%', 'margin-top': '-100px', 'left': '50%', 'margin-left': '-235px' })}
+    });
     $('#pokemonSeen').autocomplete({
       source: pokemonLabelValues
     });
