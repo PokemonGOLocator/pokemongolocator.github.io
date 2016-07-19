@@ -32,7 +32,7 @@
           lat: (userLat != 0) ? userLat : defaultLat ,
           lng: (userLon != 0) ? userLon : defaultLon
         },
-        zoom: 17
+        zoom: 19
       });
 
       var updateTimeout;
@@ -42,7 +42,8 @@
             $('#pokemonSeen').val('');
             $('#dialog #location-lat').val(event.latLng.lat());
             $('#dialog #location-lng').val(event.latLng.lng());
-            window.dialog.dialog('open')
+            window.dialog.dialog('open');
+            $('#dialog-form input').focus();
           }
         }, 200);
       });
