@@ -2,46 +2,32 @@
 <head>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCgDodYEdP6heYjBxsPNY0OudmpuutaEgc&callback=initMap" async defer>
  </script>
+ <link rel="stylesheet" href="http://code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css">
  <style>
   #map-container { height: 100%; width: 100%;}
+  #dialog { display: none; height: 100px; width: 100px;}
  </style>
 </head>
 <body>
   <div id='map-container'>
   </div>
   <script>
-    function promptAndPlaceMarker(latLng) {
-      var pokemonSeen = prompt("What pokemon did you see?", "");
-      var pokemonHTML = '<div>' + pokemonSeen + ' was seen here.</div>';
-      if (pokemonSeen.length == 0) { return };
-      var marker = new google.maps.Marker({
-          position: latLng,
-          map: map,
-          animation: google.maps.Animation.DROP,
-          title: pokemonSeen
-      });
-      var infowindow = new google.maps.InfoWindow({
-        content: pokemonHTML
-      });
-      marker.addListener('click', function(){
-        infowindow.open(map, marker);
-      })
-    }
     var map;
     function initMap() {
       var defaultLat = 37.5407;
       var defaultLon = -77.4360;
-      var userLat, userLon;
-      if("geolocation" in navigator) {
-        var userPosition = navigator.geolocation.getCurrentPosition(function(userPosition){
+      var userLat =0, userLon = 0;
+      if(navigator.geolocation){
+        navigator.geolocation.getCurrentPosition(function(userPosition){
           userLat = userPosition.coords.latitude;
           userLon = userPosition.coords.longitude;
         });
       }
+
       map = new google.maps.Map(document.getElementById('map-container'), {
         center: {
-          lat: (userLat != null) ? userLat : defaultLat ,
-          lng: (userLon!= null) ? userLon : defaultLon
+          lat: (userLat != 0) ? userLat : defaultLat ,
+          lng: (userLon != 0) ? userLon : defaultLon
         },
         zoom: 14
       });
@@ -49,7 +35,12 @@
       var updateTimeout;
       google.maps.event.addListener(map, 'click', function(event){
         updateTimeout = setTimeout(function() {
-          promptAndPlaceMarker(event.latLng)
+          if(!window.dialog.dialog('isOpen')) {
+            $('#pokemonSeen').val('');
+            $('#dialog #location-lat').val(event.latLng.lat());
+            $('#dialog #location-lng').val(event.latLng.lng());
+            window.dialog.dialog('open')
+          }
         }, 200);
       });
 
@@ -57,6 +48,196 @@
         clearTimeout(updateTimeout);
       });
     }
+  </script>
+
+  <div id='dialog'>
+    <input type='hidden' id='location-lat' />
+    <input type='hidden' id='location-lng' />
+    <div class="ui-widget">
+      <input type='text' name='pokemonSeen' id='pokemonSeen'/>
+    </div>
+    <button id="dialog-submit">Ok</button>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js" integrity="sha256-eGE6blurk5sHj+rmkfsGYeKyZx3M4bG+ZlFyA7Kns7E=" crossorigin="anonymous"></script>
+  <script>
+    $(document).ready(function(){
+      function placeMarker(pokemonName){
+        window.dialog.dialog('close');
+        var marker = new google.maps.Marker({
+          position: new google.maps.LatLng($('#dialog #location-lat').val(), $('#dialog #location-lng').val()),
+          map: map,
+          animation: google.maps.Animation.DROP,
+          icon: listOfPokemon[pokemonName]
+        });
+      }
+      $('#dialog-submit').on("click", function(event){
+        placeMarker($('#pokemonSeen').val());
+      })
+      var listOfPokemon = {
+        "Bulbasaur": "http://cdn.bulbagarden.net/upload/e/ec/001MS.png",
+        "Ivysaur": "http://cdn.bulbagarden.net/upload/6/6b/002MS.png",
+        "Venusaur": "http://cdn.bulbagarden.net/upload/d/df/003MS.png",
+        "Charmander": "http://cdn.bulbagarden.net/upload/b/bb/004MS.png",
+        "Charmeleon": "http://cdn.bulbagarden.net/upload/d/dc/005MS.png",
+        "Charizard": "http://cdn.bulbagarden.net/upload/0/01/006MS.png",
+        "Squirtle": "http://cdn.bulbagarden.net/upload/9/92/007MS.png",
+        "Wartortle": "http://cdn.bulbagarden.net/upload/f/f3/008MS.png",
+        "Blastoise": "http://cdn.bulbagarden.net/upload/c/cb/009MS.png",
+        "Caterpie": "http://cdn.bulbagarden.net/upload/6/69/010MS.png",
+        "Metapod": "http://cdn.bulbagarden.net/upload/c/ce/011MS.png",
+        "Butterfree": "http://cdn.bulbagarden.net/upload/1/14/012MS.png",
+        "Weedle": "http://cdn.bulbagarden.net/upload/6/65/013MS.png",
+        "Kakuna": "http://cdn.bulbagarden.net/upload/8/81/014MS.png",
+        "Beedrill": "http://cdn.bulbagarden.net/upload/5/5a/015MS.png",
+        "Pidgey": "http://cdn.bulbagarden.net/upload/9/9c/016MS.png",
+        "Pidgeotto": "http://cdn.bulbagarden.net/upload/a/a9/017MS.png",
+        "Pidgeot": "http://cdn.bulbagarden.net/upload/6/68/018MS.png",
+        "Rattata": "http://cdn.bulbagarden.net/upload/4/4d/019MS.png",
+        "Raticate": "http://cdn.bulbagarden.net/upload/4/4d/020MS.png",
+        "Spearow": "http://cdn.bulbagarden.net/upload/5/5b/021MS.png",
+        "Fearow": "http://cdn.bulbagarden.net/upload/3/35/022MS.png",
+        "Ekans": "http://cdn.bulbagarden.net/upload/0/0d/023MS.png",
+        "Arbok": "http://cdn.bulbagarden.net/upload/d/d3/024MS.png",
+        "Pikachu": "http://cdn.bulbagarden.net/upload/0/0f/025MS.png",
+        "Raichu": "http://cdn.bulbagarden.net/upload/d/da/026MS.png",
+        "Sandshrew": "http://cdn.bulbagarden.net/upload/c/c3/027MS.png",
+        "Sandslash": "http://cdn.bulbagarden.net/upload/e/e0/028MS.png",
+        "Nidoran♀": "http://cdn.bulbagarden.net/upload/a/ab/029MS.png",
+        "Nidorina": "http://cdn.bulbagarden.net/upload/d/d0/030MS.png",
+        "Nidoqueen": "http://cdn.bulbagarden.net/upload/3/31/031MS.png",
+        "Nidoran♂": "http://cdn.bulbagarden.net/upload/f/fb/032MS.png",
+        "Nidorino": "http://cdn.bulbagarden.net/upload/0/0e/033MS.png",
+        "Nidoking": "http://cdn.bulbagarden.net/upload/1/18/034MS.png",
+        "Clefairy": "http://cdn.bulbagarden.net/upload/f/f9/035MS.png",
+        "Clefable": "http://cdn.bulbagarden.net/upload/7/75/036MS.png",
+        "Vulpix": "http://cdn.bulbagarden.net/upload/8/85/037MS.png",
+        "Ninetales": "http://cdn.bulbagarden.net/upload/1/10/038MS.png",
+        "Jigglypuff": "http://cdn.bulbagarden.net/upload/9/9c/039MS.png",
+        "Wigglytuff": "http://cdn.bulbagarden.net/upload/f/f1/040MS.png",
+        "Zubat": "http://cdn.bulbagarden.net/upload/9/96/041MS.png",
+        "Golbat": "http://cdn.bulbagarden.net/upload/d/d0/042MS.png",
+        "Oddish": "http://cdn.bulbagarden.net/upload/a/a5/043MS.png",
+        "Gloom": "http://cdn.bulbagarden.net/upload/d/d9/044MS.png",
+        "Vileplume": "http://cdn.bulbagarden.net/upload/3/3e/045MS.png",
+        "Paras": "http://cdn.bulbagarden.net/upload/7/7a/046MS.png",
+        "Parasect": "http://cdn.bulbagarden.net/upload/4/41/047MS.png",
+        "Venonat": "http://cdn.bulbagarden.net/upload/1/1e/048MS.png",
+        "Venomoth": "http://cdn.bulbagarden.net/upload/3/31/049MS.png",
+        "Diglett": "http://cdn.bulbagarden.net/upload/8/8b/050MS.png",
+        "Dugtrio": "http://cdn.bulbagarden.net/upload/8/86/051MS.png",
+        "Meowth": "http://cdn.bulbagarden.net/upload/5/50/052MS.png",
+        "Persian": "http://cdn.bulbagarden.net/upload/a/a7/053MS.png",
+        "Psyduck": "http://cdn.bulbagarden.net/upload/6/6b/054MS.png",
+        "Golduck": "http://cdn.bulbagarden.net/upload/6/64/055MS.png",
+        "Mankey": "http://cdn.bulbagarden.net/upload/a/ad/056MS.png",
+        "Primeape": "http://cdn.bulbagarden.net/upload/f/f1/057MS.png",
+        "Growlithe": "http://cdn.bulbagarden.net/upload/6/69/058MS.png",
+        "Arcanine": "http://cdn.bulbagarden.net/upload/3/35/059MS.png",
+        "Poliwag": "http://cdn.bulbagarden.net/upload/1/17/060MS.png",
+        "Poliwhirl": "http://cdn.bulbagarden.net/upload/3/36/061MS.png",
+        "Poliwrath": "http://cdn.bulbagarden.net/upload/5/5e/062MS.png",
+        "Abra": "http://cdn.bulbagarden.net/upload/c/cf/063MS.png",
+        "Kadabra": "http://cdn.bulbagarden.net/upload/b/b6/064MS.png",
+        "Alakazam": "http://cdn.bulbagarden.net/upload/c/ca/065MS.png",
+        "Machop": "http://cdn.bulbagarden.net/upload/6/6c/066MS.png",
+        "Machoke": "http://cdn.bulbagarden.net/upload/0/0f/067MS.png",
+        "Machamp": "http://cdn.bulbagarden.net/upload/1/1e/068MS.png",
+        "Bellsprout": "http://cdn.bulbagarden.net/upload/7/7b/069MS.png",
+        "Weepinbell": "http://cdn.bulbagarden.net/upload/d/d5/070MS.png",
+        "Victreebel": "http://cdn.bulbagarden.net/upload/9/9b/071MS.png",
+        "Tentacool": "http://cdn.bulbagarden.net/upload/4/42/072MS.png",
+        "Tentacruel": "http://cdn.bulbagarden.net/upload/f/fc/073MS.png",
+        "Geodude": "http://cdn.bulbagarden.net/upload/0/04/074MS.png",
+        "Graveler": "http://cdn.bulbagarden.net/upload/5/5c/075MS.png",
+        "Golem": "http://cdn.bulbagarden.net/upload/3/34/076MS.png",
+        "Ponyta": "http://cdn.bulbagarden.net/upload/5/55/077MS.png",
+        "Rapidash": "http://cdn.bulbagarden.net/upload/6/66/078MS.png",
+        "Slowpoke": "http://cdn.bulbagarden.net/upload/6/6a/079MS.png",
+        "Slowbro": "http://cdn.bulbagarden.net/upload/b/b6/080MS.png",
+        "Magnemite": "http://cdn.bulbagarden.net/upload/0/0f/081MS.png",
+        "Magneton": "http://cdn.bulbagarden.net/upload/0/0c/082MS.png",
+        "Farfetch'd": "http://cdn.bulbagarden.net/upload/5/57/083MS.png",
+        "Doduo": "http://cdn.bulbagarden.net/upload/f/fc/084MS.png",
+        "Dodrio": "http://cdn.bulbagarden.net/upload/1/19/085MS.png",
+        "Seel": "http://cdn.bulbagarden.net/upload/9/9b/086MS.png",
+        "Dewgong": "http://cdn.bulbagarden.net/upload/2/20/087MS.png",
+        "Grimer": "http://cdn.bulbagarden.net/upload/5/50/088MS.png",
+        "Muk": "http://cdn.bulbagarden.net/upload/b/b4/089MS.png",
+        "Shellder": "http://cdn.bulbagarden.net/upload/4/41/090MS.png",
+        "Cloyster": "http://cdn.bulbagarden.net/upload/b/bc/091MS.png",
+        "Gastly": "http://cdn.bulbagarden.net/upload/c/cf/092MS.png",
+        "Haunter": "http://cdn.bulbagarden.net/upload/7/71/093MS.png",
+        "Gengar": "http://cdn.bulbagarden.net/upload/a/a4/094MS.png",
+        "Onix": "http://cdn.bulbagarden.net/upload/c/cd/095MS.png",
+        "Drowzee": "http://cdn.bulbagarden.net/upload/8/8e/096MS.png",
+        "Hypno": "http://cdn.bulbagarden.net/upload/9/98/097MS.png",
+        "Krabby": "http://cdn.bulbagarden.net/upload/4/40/098MS.png",
+        "Kingler": "http://cdn.bulbagarden.net/upload/5/5c/099MS.png",
+        "Voltorb": "http://cdn.bulbagarden.net/upload/c/c1/100MS.png",
+        "Electrode": "http://cdn.bulbagarden.net/upload/6/69/101MS.png",
+        "Exeggcute": "http://cdn.bulbagarden.net/upload/a/a6/102MS.png",
+        "Exeggutor": "http://cdn.bulbagarden.net/upload/d/db/103MS.png",
+        "Cubone": "http://cdn.bulbagarden.net/upload/2/2e/104MS.png",
+        "Marowak": "http://cdn.bulbagarden.net/upload/6/6f/105MS.png",
+        "Hitmonlee": "http://cdn.bulbagarden.net/upload/6/60/106MS.png",
+        "Hitmonchan": "http://cdn.bulbagarden.net/upload/1/1a/107MS.png",
+        "Lickitung": "http://cdn.bulbagarden.net/upload/2/25/108MS.png",
+        "Koffing": "http://cdn.bulbagarden.net/upload/3/3f/109MS.png",
+        "Weezing": "http://cdn.bulbagarden.net/upload/2/22/110MS.png",
+        "Rhyhorn": "http://cdn.bulbagarden.net/upload/6/67/111MS.png",
+        "Rhydon": "http://cdn.bulbagarden.net/upload/c/ce/112MS.png",
+        "Chansey": "http://cdn.bulbagarden.net/upload/e/ea/113MS.png",
+        "Tangela": "http://cdn.bulbagarden.net/upload/4/45/114MS.png",
+        "Kangaskhan": "http://cdn.bulbagarden.net/upload/6/68/115MS.png",
+        "Horsea": "http://cdn.bulbagarden.net/upload/2/23/116MS.png",
+        "Seadra": "http://cdn.bulbagarden.net/upload/8/81/117MS.png",
+        "Goldeen": "http://cdn.bulbagarden.net/upload/9/9b/118MS.png",
+        "Seaking": "http://cdn.bulbagarden.net/upload/8/88/119MS.png",
+        "Staryu": "http://cdn.bulbagarden.net/upload/6/60/120MS.png",
+        "Starmie": "http://cdn.bulbagarden.net/upload/5/55/121MS.png",
+        "Mr. Mime": "http://cdn.bulbagarden.net/upload/5/58/122MS.png",
+        "Scyther": "http://cdn.bulbagarden.net/upload/5/54/123MS.png",
+        "Jynx": "http://cdn.bulbagarden.net/upload/f/f5/124MS.png",
+        "Electabuzz": "http://cdn.bulbagarden.net/upload/7/72/125MS.png",
+        "Magmar": "http://cdn.bulbagarden.net/upload/e/e7/126MS.png",
+        "Pinsir": "http://cdn.bulbagarden.net/upload/5/5c/127MS.png",
+        "Tauros": "http://cdn.bulbagarden.net/upload/9/95/128MS.png",
+        "Magikarp": "http://cdn.bulbagarden.net/upload/7/7c/129MS.png",
+        "Gyarados": "http://cdn.bulbagarden.net/upload/a/a0/130MS.png",
+        "Lapras": "http://cdn.bulbagarden.net/upload/4/4b/131MS.png",
+        "Ditto": "http://cdn.bulbagarden.net/upload/5/53/132MS.png",
+        "Eevee": "http://cdn.bulbagarden.net/upload/d/de/133MS.png",
+        "Vaporeon": "http://cdn.bulbagarden.net/upload/b/be/134MS.png",
+        "Jolteon": "http://cdn.bulbagarden.net/upload/1/16/135MS.png",
+        "Flareon": "http://cdn.bulbagarden.net/upload/3/30/136MS.png",
+        "Porygon": "http://cdn.bulbagarden.net/upload/f/f7/137MS.png",
+        "Omanyte": "http://cdn.bulbagarden.net/upload/9/97/138MS.png",
+        "Omastar": "http://cdn.bulbagarden.net/upload/2/2a/139MS.png",
+        "Kabuto": "http://cdn.bulbagarden.net/upload/1/1e/140MS.png",
+        "Kabutops": "http://cdn.bulbagarden.net/upload/0/08/141MS.png",
+        "Aerodactyl": "http://cdn.bulbagarden.net/upload/d/d1/142MS.png",
+        "Snorlax": "http://cdn.bulbagarden.net/upload/d/d6/143MS.png",
+        "Articuno": "http://cdn.bulbagarden.net/upload/0/04/144MS.png",
+        "Zapdos": "http://cdn.bulbagarden.net/upload/3/3f/145MS.png",
+        "Moltres": "http://cdn.bulbagarden.net/upload/f/fe/146MS.png",
+        "Dratini": "http://cdn.bulbagarden.net/upload/2/26/147MS.png",
+        "Dragonair": "http://cdn.bulbagarden.net/upload/4/4e/148MS.png",
+        "Dragonite": "http://cdn.bulbagarden.net/upload/c/cc/149MS.png",
+        "Mewtwo": "http://cdn.bulbagarden.net/upload/1/1a/150MS.png",
+        "Mew": "http://cdn.bulbagarden.net/upload/a/a7/151MS.png"
+        };
+    var pokemonLabelValues = [];
+    $.each(listOfPokemon, function(name){
+      pokemonLabelValues.push(name)
+    });
+
+    window.dialog = $('#dialog');
+    window.dialog.dialog({ autoOpen: false });
+    $('#pokemonSeen').autocomplete({
+      source: pokemonLabelValues
+    });
+  });
   </script>
 </body>
 </html>
